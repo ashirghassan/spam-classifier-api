@@ -134,7 +134,7 @@ Key Python libraries and frameworks used:
 ## Visualizations
 
 * **Confusion Matrix on Test Set:**
-    ![Confusion Matrix Heatmap](images/Confusion Matrix.png)
+    ![Confusion Matrix Heatmap](images/Confusion_Matrix.png)
     
 ---
 
