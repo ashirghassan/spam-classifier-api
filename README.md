@@ -138,7 +138,7 @@ Key Python libraries and frameworks used:
     
 ---
 
-## Challenges and Learnings (Optional)
+## Challenges and Learnings
 
 * Successfully integrated different components: ML model, Flask API, SQL database, Docker, and CI/CD pipeline using Gitlab.
 * Gained practical experience with Dockerizing a Python application and setting up an automated build/push workflow.
