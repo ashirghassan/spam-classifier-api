@@ -71,14 +71,16 @@ These metrics indicate a highly effective spam classifier with a good balance of
 
 ## Live Demo
 
-A live version of this Spam Classifier API is deployed and publicly accessible via Render.com.
+A live version of this Spam Classifier API is deployed and publicly accessible.
 
 * **Platform:** Render.com (using the Free Tier)
-* **URL:** **`https://spam-classifier-api-qsr3.onrender.com/predict`**
-    * *(Note: The specific URL may change if the Render service is renamed; always use the URL provided by Render).*
-* **Access Method:** Send a **POST** request to the `/predict` endpoint with JSON data containing your message.
+* **URL:** `https://spam-classifier-api-qsr3.onrender.com`
+    * *(Note: The base URL may change if you rename the Render service; always use the URL provided by Render).*
+* **Access Method:** Send a **POST** request to the `/predict` endpoint with JSON data containing your message. The full prediction endpoint URL is `https://spam-classifier-api-qsr3.onrender.com/predict`.
 
-**Example using `curl` (from your terminal):**
+You can test the live API using `curl` (or `Invoke-WebRequest` in PowerShell) or a simple Python `requests` script.
+
+**Example using `curl` (from a standard terminal like Git Bash):**
 
 ```bash
 curl -X POST -H "Content-Type: application/json" -d '{"message": "Claim your prize now!"}' [https://spam-classifier-api-qsr3.onrender.com/predict](https://spam-classifier-api-qsr3.onrender.com/predict)
