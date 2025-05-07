@@ -1,0 +1,81 @@
+# Step 5.7.1: Corrected .gitlab-ci.yml
+# CI/CD Pipeline for Spam Classifier Docker Image
+
+# Define the stages of the CI/CD pipeline
+stages:
+  - build
+  - deploy
+  # Optional: Add a 'test' stage here if you had automated tests for your app or model
+  # - test
+
+# Define variables that can be used in jobs
+# CI_REGISTRY_IMAGE is a built-in Gitlab CI variable for your project's container registry path
+variables: # Variables key needs to be at the top level
+  IMAGE_NAME: $CI_REGISTRY_IMAGE
+  # Use the commit SHA as the image tag for uniqueness
+  IMAGE_TAG: $CI_COMMIT_SHA
+  # Optional: Also define the DOCKER_HOST variable if needed, though 'services' is often sufficient
+  # DOCKER_HOST: tcp://docker:2375 # Only needed in some specific configurations with dind
+
+
+# Job to build the Docker image
+build_docker_image:
+  stage: build # This job belongs to the 'build' stage
+  image: docker:latest # Use the latest Docker image as the runtime environment for this job
+  services: # We need the Docker-in-Docker (dind) service to build Docker images within Gitlab CI
+    - docker:dind
+  before_script: # Commands to run before the main script
+    - echo "Logging into Gitlab Container Registry..."
+    # Log in to the Gitlab Container Registry using predefined CI variables
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script: # The main commands for this job - MANDATORY for a job to do something
+    - echo "Building Docker image with tag $IMAGE_TAG..."
+    # Build the Docker image using the Dockerfile located in the project root (.)
+    # Tag it with the image name and the unique commit SHA tag
+    - docker build -t "$IMAGE_NAME":"$IMAGE_TAG" .
+    # Optional: Also tag the image with 'latest' for convenience
+    - docker tag "$IMAGE_NAME":"$IMAGE_TAG" "$IMAGE_NAME":latest
+    - echo "Docker image built successfully."
+  only: # This job will only run for pushes to the 'main' branch
+    - main
+  # Optional: Add artifacts if you want to save build outputs (e.g., build logs)
+
+# Job to push the built Docker image to the Gitlab Container Registry
+push_to_registry:
+  stage: deploy # This job belongs to the 'deploy' stage
+  image: docker:latest # Use the Docker image as the runtime environment
+  services: # Need dind again for Docker operations
+    - docker:dind
+  before_script: # Log in to the registry before pushing
+    - echo "Logging into Gitlab Container Registry..."
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script: # The main commands for this job - MANDATORY for a job to do something
+    - echo "Pushing Docker image with tag $IMAGE_TAG to registry..."
+    # Push the specific tagged image
+    - docker push "$IMAGE_NAME":"$IMAGE_TAG"
+    # Optional: Push the 'latest' tag as well
+    - docker push "$IMAGE_NAME":latest
+    - echo "Docker image pushed successfully."
+  only: # This job will only run for pushes to the 'main' branch
+    - main
+  # This job depends on the 'build' job completing successfully
+  dependencies:
+    - build_docker_image
+
+# Optional: Add a test job here if you had automated test scripts
+# test_application:
+#   stage: test
+#   image: python:3.9-slim # Or the same image as your app if preferred
+#   script:
+#     - echo "Running placeholder tests..."
+#     # Add commands to install test dependencies and run test scripts
+#     # - pip install -r requirements.txt
+#     # - pip install pytest
+#     # - pytest # Command to run your tests
+#   # This job could run on pushes to feature branches or merge requests
+#   # only:
+#   #   - merge_requests
+#   #   - branches
+#   # Needs the build job to have completed successfully
+#   # dependencies:
+#   #  - build_docker_image
