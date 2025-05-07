@@ -86,7 +86,63 @@ You can test the live API using `curl` (or `Invoke-WebRequest` in PowerShell) or
 Invoke-WebRequest -Uri https://spam-classifier-api-qsr3.onrender.com/predict -Method POST -Headers @{"Content-Type"="application/json"} -Body '{"message": "Claim your prize now!"}'
 ```
 
-or
+**Example using PowerShell Invoke-WebRequest:**
 ```bash
 curl -X POST -H "Content-Type: application/json" -d '{"message": "Claim your prize now!"}' [https://spam-classifier-api-qsr3.onrender.com/predict](https://spam-classifier-api-qsr3.onrender.com/predict)
 ```
+
+**Important Considerations (Due to Free Tier):**
+
+Cold Starts: The service may "sleep" after a period of inactivity.
+No Persistent Database: The SQLite log data is not persistent across deployments or container restarts on the Free tier.
+
+## Code and Repository
+
+The full project code, `Dockerfile`, and CI/CD configuration (`.gitlab-ci.yml`) are hosted on Gitlab:
+
+* **Gitlab Repository:** [**Link to Your Gitlab Repository** - Replace with your actual Gitlab Repository URL]
+* **Model Training Notebook:** `Spam_Classifier_Model.ipynb` (The Colab notebook used for initial model training and saving).
+* **API Code:** `app.py` (The Python Flask application).
+* **Docker Configuration:** `Dockerfile`
+* **Dependencies:** `requirements.txt`
+* **CI/CD Pipeline:** `.gitlab-ci.yml`
+
+You can pull and run the Docker image directly from the Gitlab Container Registry on any machine with Docker installed:
+
+```bash
+docker pull [registry.gitlab.com/ashirghassan/spam-classifier-api:latest](https://registry.gitlab.com/ashirghassan/spam-classifier-api:latest)
+```
+Then, run the container, mapping the port:
+
+```bash
+docker run -p 5000:5000 [registry.gitlab.com/ashirghassan/spam-classifier-api:latest](https://registry.gitlab.com/ashirghassan/spam-classifier-api:latest)
+```
+
+## Dependencies
+
+Key Python libraries and frameworks used:
+
+* `Flask`
+* `scikit-learn`
+* `joblib`
+* `pandas`
+* `sqlite3`
+* `matplotlib`
+* `seaborn`
+* `Pillow`
+
+## Visualizations
+
+* **Confusion Matrix on Test Set:**
+    ![Confusion Matrix Heatmap](images/Confusion Matrix.png)
+    
+---
+
+## Challenges and Learnings (Optional)
+
+* Successfully integrated different components: ML model, Flask API, SQL database, Docker, and CI/CD pipeline using Gitlab.
+* Gained practical experience with Dockerizing a Python application and setting up an automated build/push workflow.
+* Addressed the challenge of evaluating models on imbalanced datasets and choosing appropriate metrics (Precision, Recall, F1).
+* Learned about deploying containerized applications to a cloud platform (Render.com) and the considerations for free-tier services and persistence.
+
+---
