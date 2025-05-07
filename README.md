@@ -83,4 +83,10 @@ You can test the live API using `curl` (or `Invoke-WebRequest` in PowerShell) or
 **Example using `curl` (from a standard terminal like Git Bash):**
 
 ```bash
+Invoke-WebRequest -Uri https://spam-classifier-api-qsr3.onrender.com/predict -Method POST -Headers @{"Content-Type"="application/json"} -Body '{"message": "Claim your prize now!"}'
+```
+
+or
+```bash
 curl -X POST -H "Content-Type: application/json" -d '{"message": "Claim your prize now!"}' [https://spam-classifier-api-qsr3.onrender.com/predict](https://spam-classifier-api-qsr3.onrender.com/predict)
+```
