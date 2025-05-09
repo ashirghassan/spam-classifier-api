@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam Classifier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #0056b3;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 100px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 30px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #e9e9e9;
+            min-height: 50px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        #result .ham {
+            color: #28a745; /* Green for ham */
+        }
+        #result .spam {
+            color: #dc3545; /* Red for spam */
+        }
+        #loading {
+            display: none; /* Hidden by default */
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Spam Classifier</h1>
+        <form id="spamForm">
+            <label for="messageInput">Enter your message:</label>
+            <textarea id="messageInput" placeholder="Type your message here..."></textarea>
+            <button type="submit">Classify Message</button>
+        </form>
+        <div id="loading">Loading...</div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('spamForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent default form submission (page reload)
+
+            const messageInput = document.getElementById('messageInput');
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+
+            const message = messageInput.value;
+            if (!message.trim()) {
+                resultDiv.innerHTML = '<span style="color: #ffc107;">Please enter a message.</span>';
+                return;
+            }
+
+            loadingDiv.style.display = 'block'; // Show loading indicator
+            resultDiv.innerHTML = ''; // Clear previous result
+
+            try {
+                const apiUrl = 'https://spam-classifier-api-qsr3.onrender.com';
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const predictedLabel = data.predicted_label;
+                    const probabilitySpam = data.probability_spam;
+                    const probabilityHam = data.probability_ham;
+
+                    let displayClass = '';
+                    let displayColorClass = '';
+
+                    if (predictedLabel === 'spam') {
+                        displayClass = `This message is likely <span class="spam">SPAM</span>`;
+                        displayColorClass = 'spam';
+                    } else {
+                        displayClass = `This message is likely <span class="ham">HAM</span> (Not Spam)`;
+                        displayColorClass = 'ham';
+                    }
+
+                    resultDiv.innerHTML = `
+                        ${displayClass}<br>
+                        (Spam Probability: ${probabilitySpam.toFixed(4)} | Ham Probability: ${probabilityHam.toFixed(4)})
+                    `;
+                    resultDiv.className = ''; // Clear previous classes
+                    resultDiv.classList.add(displayColorClass); // Add class for coloring
+                } else {
+                    resultDiv.innerHTML = `<span style="color: red;">Error: ${data.error || 'Prediction failed.'}</span>`;
+                }
+
+            } catch (error) {
+                console.error('Error during API call:', error);
+                resultDiv.innerHTML = '<span style="color: red;">Could not connect to the API. Please try again later.</span>';
+            } finally {
+                loadingDiv.style.display = 'none'; // Hide loading indicator
+            }
+        });
+    </script>
+</body>
+</html>

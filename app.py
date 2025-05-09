@@ -1,7 +1,7 @@
 # Step 2.2: Write the Flask Application (app.py)
 
 # Set up SQLite Database in app.py
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template 
 import joblib
 import os
 import pandas as pd
@@ -70,6 +70,16 @@ app = Flask(__name__)
 # --- Define Prediction Endpoint ---
 # This is the API endpoint that will receive incoming requests
 @app.route('/predict', methods=['POST']) # Listen for POST requests at the /predict URL
+
+# --- Basic Route for Frontend ---
+@app.route('/')
+def index():
+    # This tells Flask to look for 'index.html' in a 'templates' folder
+    return render_template('index.html')
+
+# --- Define Prediction Endpoint ---
+@app.route('/predict', methods=['POST'])
+
 
 # Corrected predict_spam function
 def predict_spam():
