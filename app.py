@@ -181,4 +181,4 @@ if __name__ == '__main__':
     # Run the app in debug mode and listen on all public IPs (needed for Docker)
     # debug=True is useful for development, but disable in production
     # host='0.0.0.0' makes the server accessible from outside the container
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=False, host='0.0.0.0') # Changed debug to False
