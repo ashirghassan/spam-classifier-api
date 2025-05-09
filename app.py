@@ -172,9 +172,6 @@ def predict_spam():
 
 # --- Basic Route (Optional) ---
 # You can add a simple route to check if the server is running
-@app.route('/')
-def index():
-    return "Spam Classifier API is running!"
 
 # --- Run the Flask Development Server ---
 if __name__ == '__main__':
