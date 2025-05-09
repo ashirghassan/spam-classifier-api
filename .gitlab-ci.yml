@@ -1,85 +1,47 @@
-# Step 5.5: Create .gitlab-ci.yml
+# Step 5.7.5: Corrected .gitlab-ci.yml (Combined Build and Push)
 # CI/CD Pipeline for Spam Classifier Docker Image
 
 # Define the stages of the CI/CD pipeline
 stages:
-  - build
+  # We can keep stages but put build and push in one job, likely in the deploy stage
+  # Or simplify to just one stage if no other steps are needed between build/push
+  # Let's keep 'deploy' as the stage name for the combined job
   - deploy
-  # Optional: Add a 'test' stage here if you had automated tests for your app or model
+  # Optional: Add a 'test' stage before deploy if you had automated tests
   # - test
 
-# --- Variables ---
-# Define variables that can be used in jobs
-# CI_REGISTRY_IMAGE is a built-in Gitlab CI variable for your project's container registry path
-IMAGE_NAME: $CI_REGISTRY_IMAGE
-# Use the commit SHA as the image tag for uniqueness
-IMAGE_TAG: $CI_COMMIT_SHA
+# Define variables
+variables:
+  IMAGE_NAME: $CI_REGISTRY_IMAGE
+  IMAGE_TAG: $CI_COMMIT_SHA
 
-
-# --- Jobs ---
-
-# Job to build the Docker image
-build_docker_image:
-  stage: build # This job belongs to the 'build' stage
-  image: docker:latest # Use the latest Docker image as the runtime environment for this job
-  services: # We need the Docker-in-Docker (dind) service to build Docker images within Gitlab CI
+# --- Combined Build and Push Job ---
+build_and_push_docker:
+  stage: deploy # Place this job in the deploy stage
+  image: docker:latest # Use the latest Docker image as the runner environment
+  services: # Need Docker-in-Docker for build and push commands
     - docker:dind
-  before_script: # Commands to run before the main script
-    # Log in to the Gitlab Container Registry using predefined CI variables
-    # These variables are automatically available in Gitlab CI jobs
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-  script: # The main commands for this job
-    - echo "Building Docker image with tag $IMAGE_TAG..."
-    # Build the Docker image using the Dockerfile located in the project root (.)
-    # Tag it with the image name and the unique commit SHA tag
-    - docker build -t "$IMAGE_NAME":"$IMAGE_TAG" .
-    # Optional: Also tag the image with 'latest' for convenience
-    - docker tag "$IMAGE_NAME":"$IMAGE_TAG" "$IMAGE_NAME":latest
-    - echo "Docker image built successfully."
-  only: # This job will only run for pushes to the 'main' branch
-    - main
-  # Optional: Add artifacts if you want to save build outputs (e.g., build logs)
-
-# Job to push the built Docker image to the Gitlab Container Registry
-push_to_registry:
-  stage: deploy # This job belongs to the 'deploy' stage
-  image: docker:latest # Use the Docker image as the runtime environment
-  services: # Need dind again for Docker operations
-    - docker:dind
-  before_script: # Log in to the registry before pushing
+  before_script:
     - echo "Logging into Gitlab Container Registry..."
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-  script: # The main commands for this job
+  script: # The main commands for this job - Build THEN Push
+    - echo "Building Docker image with tag $IMAGE_TAG..."
+    # Build the Docker image. Tag it with the full registry path and commit SHA.
+    # This makes the image immediately available for push by its full name.
+    - docker build -t "$IMAGE_NAME":"$IMAGE_TAG" .
+    # Optional: Tag with 'latest'
+    - docker tag "$IMAGE_NAME":"$IMAGE_TAG" "$IMAGE_NAME":latest
+    - echo "Docker image built successfully."
+
     - echo "Pushing Docker image with tag $IMAGE_TAG to registry..."
-    # Push the specific tagged image
+    # Push the image using its full name and tag
     - docker push "$IMAGE_NAME":"$IMAGE_TAG"
-    # Optional: Push the 'latest' tag as well
+    # Optional: Push the 'latest' tag
     - docker push "$IMAGE_NAME":latest
     - echo "Docker image pushed successfully."
   only: # This job will only run for pushes to the 'main' branch
     - main
-  # Needs the build job to have completed successfully
-  dependencies:
-    - build_docker_image # This job depends on the 'build_docker_image' job
-
-
-# Optional: Add a test job here if you had automated test scripts (e.g., using pytest)
-# test_application:
-#   stage: test
-#   image: python:3.9-slim # Or the same image as your app if preferred
-#   script:
-#     - echo "Running placeholder tests..."
-#     # Add commands to install test dependencies and run test scripts
-#     # - pip install -r requirements.txt
-#     # - pip install pytest
-#     # - pytest # Command to run your tests
-#   # This job could run on pushes to feature branches or merge requests
-#   # except:
-#   #   - main # Don't run this specific test job on pushes directly to main
-#   # OR
-#   # only:
-#   #   - merge_requests
-#   #   - branches
-#   # Needs the build job to have completed successfully (if tests run against the built app)
-#   # dependencies:
-#   #  - build_docker_image
+  # Optional: Add artifacts if needed
+  # artifacts:
+  #   paths:
+  #     - build_log.txt # Example if you log build output to a file
