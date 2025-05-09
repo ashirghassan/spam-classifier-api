@@ -107,7 +107,7 @@
             resultDiv.innerHTML = ''; // Clear previous result
 
             try {
-                const apiUrl = 'https://spam-classifier-api-qsr3.onrender.com';
+                const apiUrl = 'https://spam-classifier-api-qsr3.onrender.com/predict'; // ADDED /predict
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
