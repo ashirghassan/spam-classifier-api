@@ -67,10 +67,6 @@ except Exception as e:
 # --- Initialize Flask App ---
 app = Flask(__name__)
 
-# --- Define Prediction Endpoint ---
-# This is the API endpoint that will receive incoming requests
-@app.route('/predict', methods=['POST']) # Listen for POST requests at the /predict URL
-
 # --- Basic Route for Frontend ---
 @app.route('/')
 def index():
